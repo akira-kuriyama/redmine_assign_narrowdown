@@ -2,61 +2,45 @@ class NarrowdownListener < Redmine::Hook::ViewListener
   def view_issues_edit_notes_bottom(*args)
 js=<<'JS'
 (function(){
-  var id_enabled = "issue_assigned_to_id";
-  var id_disabled = "issue_assigned_to_id_disabled";
-  var e = document.getElementById(id_enabled);
-  if(e){
-    var useridlist={};
+  var narrowdown_select_id = "issue_assigned_to_id_narrowdown";
+  var $org_assign_select = $('#issue_assigned_to_id');
+  var useridlist = {};
     $("a[href*=users]").each(function(){
       if(/users\/([\d]+)/.test($(this).attr("href"))){
-        useridlist[RegExp.$1]=true;
-      }
-    });
-    var is = document.createElement("input");
-    is.setAttribute("type","checkbox");
-    e.parentNode.insertBefore(is,e.nextSibling);
-    var label = document.createElement("span");
-    label.appendChild(document.createTextNode("関係者のみ"));
-    label.for = "only-concerned";
-    label.setAttribute("style","font-size:80%;cursor:pointer");
-    is.id = label.for;
-    e.parentNode.insertBefore(label,is.nextSibling);
-    
-    var copiedselect = e.cloneNode(true);
-    copiedselect.id = id_disabled;
-    copiedselect.style.display = "none";
-    var options = copiedselect.options;
-    
-    for (var i = 0, l = options.length; i < l; i++) {
-      var o = options[i];
-//      console.log(o);
-      if (!useridlist[o.value]){
-        jQuery(o).attr("data-toremove", '1');
-      }
+      useridlist[RegExp.$1]=true;
     }
-    e.parentNode.insertBefore(copiedselect, e.nextSibling);
-    jQuery('option[data-toremove=1]').remove();
+  });
+  var $narrowdown_select = $org_assign_select.clone();  
+  $org_assign_select.after($narrowdown_select);
+  $narrowdown_select.attr('id', narrowdown_select_id);
+  $narrowdown_select.hide();
+  $narrowdown_select.attr('disabled', true);
+  $narrowdown_select.find('option').each(function(){
+    if(!useridlist[$(this).val()]) {
+      $(this).remove();
+    }	
+  });
 
-    $(is).on("change", function(ev) {
-      if (ev.target.checked) {
-        copiedselect.id = id_enabled;
-        copiedselect.style.display = "";
-        e.id = id_disabled;
-        e.style.display = "none";
-//        console.log('enabled');
-      } else {
-        copiedselect.id = id_disabled;
-        copiedselect.style.display = "none";
-        e.id = id_enabled;
-        e.style.display = "";
-//       console.log('disabled');
-      }
-    });
-  }
+  var checkbox_and_label_html = '<input type="checkbox" value="" name="" id="only_concerned">';
+  checkbox_and_label_html += '<label for="only_concerned" class="inline" style="font-size:80%;">関係者のみ</label>';
+  $narrowdown_select.after($(checkbox_and_label_html));
+  
+
+  $('#only_concerned').on("change", function(ev) {
+    $org_assign_select.toggle();
+    $narrowdown_select.toggle();
+    if (ev.target.checked) {
+    	$org_assign_select.attr('disabled', true);
+    	$narrowdown_select.removeAttr('disabled');
+    } else {
+    	$org_assign_select.removeAttr('disabled');
+    	$narrowdown_select.attr('disabled', true);
+    }
+  });
+
 })();
 JS
   js.force_encoding("UTF-8")
   "<script>//<![CDATA[\n#{js}\n//]]></script>"
   end
 end
-
