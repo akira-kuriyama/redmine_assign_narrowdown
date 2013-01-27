@@ -12,14 +12,14 @@ js=<<'JS'
   });
   var $narrowdown_select = $org_assign_select.clone();  
   $org_assign_select.after($narrowdown_select);
-  $narrowdown_select.attr('id', narrowdown_select_id);
-  $narrowdown_select.hide();
-  $narrowdown_select.attr('disabled', true);
-  $narrowdown_select.find('option').each(function(){
-    if(!useridlist[$(this).val()]) {
-      $(this).remove();
-    }	
-  });
+  $narrowdown_select.attr('id', narrowdown_select_id)
+			  .hide()
+			  .attr('disabled', true)
+			  .find('option').each(function(){
+				    if(!useridlist[$(this).val()]) {
+				      $(this).remove();
+				    }	
+				  });
 
   var checkbox_and_label_html = '<input type="checkbox" value="" name="" id="only_concerned">';
   checkbox_and_label_html += '<label for="only_concerned" class="inline" style="font-size:80%;">関係者のみ</label>';
